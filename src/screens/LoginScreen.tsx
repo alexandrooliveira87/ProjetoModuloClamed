@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RootStackParamList } from '../types'; //
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Importando AsyncStorage
+import { RootStackParamList } from '../types';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
 
@@ -19,6 +20,12 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
       const response = await axios.post('http://10.0.3.217:3000/login', { email, password });
       if (response.status === 200) {
         Alert.alert('Sucesso', `Bem-vindo, ${response.data.name}`);
+
+        // Armazenando o nome e perfil no AsyncStorage
+        await AsyncStorage.setItem('userName', response.data.name);
+        await AsyncStorage.setItem('userProfile', response.data.profile);
+
+        // Navegar para a tela Home
         navigation.navigate('Home');
       }
     } catch (error: any) {
