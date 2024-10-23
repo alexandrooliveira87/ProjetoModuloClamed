@@ -1,6 +1,6 @@
 export type RootStackParamList = {
   Login: undefined;
   Home: undefined;
-  ProductList: undefined;
-  UserManagement: undefined;
+  ListaProdutos: undefined;
+  Usuarios: undefined; // Nome alterado para Usuarios
 };

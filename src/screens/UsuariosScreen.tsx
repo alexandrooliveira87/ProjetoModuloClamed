@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const UserManagementScreen: React.FC = () => {
+const UsuariosScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text>Gerenciamento de Usuários</Text>
@@ -17,4 +17,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserManagementScreen;
+export default UsuariosScreen;

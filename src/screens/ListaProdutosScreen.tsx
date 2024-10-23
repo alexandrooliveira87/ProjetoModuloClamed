@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const ProductListScreen: React.FC = () => {
+const ListaProdutosScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text>Listagem de Produtos</Text>
@@ -17,4 +17,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProductListScreen;
+export default ListaProdutosScreen;
