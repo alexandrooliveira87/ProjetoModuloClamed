@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { StackNavigationProp } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Importando AsyncStorage
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import { RootStackParamList } from '../types';
 
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#143d59', // Cor de fundo
     paddingHorizontal: 20,
   },
   logo: {
@@ -90,19 +90,19 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    color: '#333',
+    color: '#f4b41a', // Cor do texto das labels
     marginBottom: 5,
   },
   input: {
     height: 50,
-    borderColor: '#ddd',
+    borderColor: '#f4b41a', // Borda amarela
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   button: {
-    backgroundColor: '#9D49F2',
+    backgroundColor: '#f4b41a', // Cor do botão
     paddingVertical: 15,
     width: '100%',
     borderRadius: 8,
@@ -110,7 +110,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   buttonText: {
-    color: '#fff',
+    color: '#143d59', // Cor do texto do botão
     fontSize: 18,
     fontWeight: 'bold',
   },
