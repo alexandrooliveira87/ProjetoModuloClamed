@@ -42,7 +42,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       {/* Card para Estoque */}
       <View style={styles.card}>
         <View style={styles.cardContent}>
-          <FontAwesome name="cube" size={32} color="#333" />
+          <FontAwesome name="cube" size={32} color="#f4b41a" />
           <Text style={styles.cardText}>Estoque</Text>
         </View>
         <TouchableOpacity
@@ -56,7 +56,7 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
       {/* Card para Usuários */}
       <View style={styles.card}>
         <View style={styles.cardContent}>
-          <FontAwesome name="user" size={32} color="#333" />
+          <FontAwesome name="user" size={32} color="#f4b41a" />
           <Text style={styles.cardText}>Usuários</Text>
         </View>
         <TouchableOpacity
@@ -74,13 +74,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 16,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#143d59',  // Cor de fundo
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 20,
-    backgroundColor: '#E8E8E8',
+    backgroundColor: '#f4b41a',  // Cor de fundo do cabeçalho
     padding: 10,
     borderRadius: 10,
   },
@@ -92,13 +92,13 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: 18,
-    color: '#333',
+    color: '#143d59',  // Cor do texto
   },
   card: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#FFF',
     padding: 16,
     marginVertical: 10,
     borderRadius: 8,
@@ -116,16 +116,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#f4b41a',  // Cor do texto
   },
   manageButton: {
-    backgroundColor: '#9D49F2',
+    backgroundColor: '#f4b41a',  // Cor do botão
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
   manageButtonText: {
-    color: '#fff',
+    color: '#143d59',  // Cor do texto do botão
     fontWeight: 'bold',
   },
 });
