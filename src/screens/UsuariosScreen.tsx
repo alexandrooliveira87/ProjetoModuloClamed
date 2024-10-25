@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Switch, Button, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import { FontAwesome5 } from '@expo/vector-icons';  // Para os ícones
+import { FontAwesome } from '@expo/vector-icons'; // Para os ícones dos perfis
 
 interface User {
   id: number;
@@ -44,43 +44,42 @@ const UsuariosScreen: React.FC = () => {
 
   // Renderizando cada item (usuário) na FlatList
   const renderItem = ({ item }: { item: User }) => (
-    <View
+    <TouchableOpacity
+      onPress={() => navigation.navigate('CadastroUsuario', { userId: item.id })} // Navegar para edição de usuário
       style={[
         styles.card,
         item.status ? styles.activeCard : styles.inactiveCard, // Aplica a borda verde ou fundo vermelho
       ]}
     >
       <View style={styles.userInfo}>
-        <FontAwesome5 name={item.status ? 'user-check' : 'user-times'} size={24} color={item.status ? '#f4b41a' : '#D9534F'} />
+        <FontAwesome
+          name={item.profile === 'motorista' ? 'motorcycle' : 'building'}
+          size={24}
+          color="#143d59" // Azul escuro para o ícone
+        />
         <Text style={styles.userName}>{item.name}</Text>
       </View>
-      <View style={styles.userSwitch}>
-        <Switch
-          value={item.status}
-          onValueChange={() => toggleUserStatus(item.id)} // Alternar o status do usuário
-        />
-      </View>
-    </View>
+      <Switch
+        value={item.status}
+        onValueChange={() => toggleUserStatus(item.id)} // Alternar o status do usuário
+      />
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* Botão de adicionar novo usuário */}
+      <FlatList
+        data={users}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.list}
+      />
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate('CadastroUsuario')} // Navegar para a tela de cadastro de usuário
       >
         <Text style={styles.addButtonText}>Novo usuário</Text>
       </TouchableOpacity>
-
-      {/* Lista de usuários */}
-      <FlatList
-        data={users}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        numColumns={2} // Exibe em duas colunas
-        contentContainerStyle={styles.list}
-      />
     </View>
   );
 };
@@ -89,18 +88,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#143d59',  // Fundo da tela atualizado
+    backgroundColor: '#143d59', // Fundo azul escuro
   },
   list: {
     paddingBottom: 16,
   },
   card: {
-    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    margin: 8,
+    marginBottom: 10,
     borderRadius: 8,
     backgroundColor: '#FFF',
     shadowColor: '#000',
@@ -108,39 +106,34 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    minWidth: '45%', // Para ajustar o espaçamento
   },
   activeCard: {
-    borderColor: '#f4b41a',
+    borderColor: 'green',
     borderWidth: 2,
-    backgroundColor: '#eae4d4',  // Cor de fundo dos cartões ativos
   },
   inactiveCard: {
-    backgroundColor: '#FFE0E0', // Cor de fundo dos cartões inativos
+    backgroundColor: '#ffcccc',
   },
   userInfo: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
   },
   userName: {
-    fontSize: 16,
+    fontSize: 18,
     marginLeft: 10,
     fontWeight: 'bold',
-    color: '#f4b41a',  // Cor do texto
-  },
-  userSwitch: {
-    marginLeft: 10,
+    color: '#f4b41a', // Amarelo para o nome
   },
   addButton: {
-    backgroundColor: '#f4b41a', // Cor do botão "Novo usuário"
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    backgroundColor: '#f4b41a', // Botão de novo usuário em amarelo
+    paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 20,
   },
   addButtonText: {
-    color: '#143d59',
+    color: '#143d59', // Texto do botão em azul escuro
     fontSize: 18,
     fontWeight: 'bold',
   },
