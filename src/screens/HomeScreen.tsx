@@ -66,6 +66,34 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.manageButtonText}>Gerenciar</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Card para Listagem de Movimentações */}
+      <View style={styles.card}>
+        <View style={styles.cardContent}>
+          <FontAwesome name="list-alt" size={32} color="#f4b41a" />
+          <Text style={styles.cardText}>Listagem de Movimentações</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.manageButton}
+          onPress={() => navigation.navigate('ListagemMovimentacoes')} 
+        >
+          <Text style={styles.manageButtonText}>Verificar</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Card para Cadastro de Movimentações */}
+      <View style={styles.card}>
+        <View style={styles.cardContent}>
+          <FontAwesome name="plus-square" size={32} color="#f4b41a" />
+          <Text style={styles.cardText}>Cadastro de Movimentações</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.manageButton}
+          onPress={() => navigation.navigate('CadastroMovimentacao')} 
+        >
+          <Text style={styles.manageButtonText}>Cadastrar</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
