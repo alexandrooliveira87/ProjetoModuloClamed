@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
     fontWeight: 'bold',
-    color: '#f4b41a', // Amarelo para o nome
+    color: '#111', // Amarelo para o nome
   },
   addButton: {
     backgroundColor: '#f4b41a', // Botão de novo usuário em amarelo
