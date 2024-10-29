@@ -1,166 +1,180 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import axios from 'axios';
-import { RootStackParamList } from '../types';
-
-type CadastroUsuarioScreenRouteProp = RouteProp<RootStackParamList, 'CadastroUsuario'>;
 
 const CadastroUsuarioScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const route = useRoute<CadastroUsuarioScreenRouteProp>();
-  const { userId } = route.params || {}; // Obtém o userId, se houver
-
-  const [userData, setUserData] = useState({
-    profile: 'motorista', // Padrão inicial
+  const [dadosUsuario, setDadosUsuario] = useState({
+    profile: 'motorista',
     name: '',
     document: '',
     full_address: '',
     email: '',
     password: '',
+    confirmarSenha: '',
   });
 
-  // Verifica se é edição e carrega dados do usuário existente
-  useEffect(() => {
-    if (userId) {
-      axios
-        .get(`http://10.0.3.217:3000/users/${userId}`)
-        .then((response) => {
-          setUserData(response.data);
-        })
-        .catch((error) => {
-          Alert.alert('Erro', 'Erro ao carregar dados do usuário');
-        });
-    }
-  }, [userId]);
+  const salvarUsuario = async () => {
+    const { name, document, full_address, email, password, confirmarSenha, profile } = dadosUsuario;
 
-  const handleSave = async () => {
-    const { name, document, full_address, email, password } = userData;
-    if (!name || !document || !full_address || !email || !password) {
+    if (!name || !document || !full_address || !email || !password || !confirmarSenha) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios');
       return;
     }
+    if (password !== confirmarSenha) {
+      Alert.alert('Erro', 'As senhas não conferem');
+      return;
+    }
 
-    if (userId) {
-      // Atualização de usuário existente
-      axios
-        .patch(`http://10.0.3.217:3000/users/${userId}`, userData)
-        .then(() => {
-          Alert.alert('Sucesso', 'Usuário atualizado com sucesso');
-          navigation.goBack(); // Voltar para a tela anterior
-        })
-        .catch((error) => {
-          Alert.alert('Erro', 'Erro ao atualizar usuário');
-          console.error(error);
+    console.log('Dados enviados:', { profile, name, document, full_address, email, password });
+
+    try {
+      const resposta = await axios.post(
+        'http://10.0.3.217:3000/register',
+        { profile, name, document, full_address, email, password },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      if (resposta.status === 201) {
+        Alert.alert('Sucesso', 'Usuário cadastrado com sucesso');
+        setDadosUsuario({
+          profile: 'motorista',
+          name: '',
+          document: '',
+          full_address: '',
+          email: '',
+          password: '',
+          confirmarSenha: '',
         });
-    } else {
-      // Cadastro de novo usuário
-      axios
-        .post('http://10.0.3.217:3000/register', userData)
-        .then((response) => {
-          Alert.alert('Sucesso', 'Usuário cadastrado com sucesso');
-          navigation.goBack();
-        })
-        .catch((error) => {
-          Alert.alert('Erro', 'Erro ao cadastrar usuário');
-          console.error(error);
-        });
+      }
+    } catch (erro: any) {
+      if (erro.response) {
+        console.error('Erro do servidor:', erro.response.data);
+        Alert.alert('Erro', erro.response.data.error || 'Erro ao cadastrar usuário');
+      } else if (erro.request) {
+        Alert.alert('Erro', 'Não foi possível se conectar ao servidor');
+      } else {
+        Alert.alert('Erro', 'Erro ao processar o cadastro');
+      }
+      console.error('Detalhes do erro:', erro);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Perfil</Text>
-      <View style={styles.profileContainer}>
-        <TouchableOpacity
-          style={[styles.profileOption, userData.profile === 'motorista' && styles.selected]}
-          onPress={() => setUserData({ ...userData, profile: 'motorista' })}
-        >
-          <Text style={styles.profileText}>Motorista</Text>
+    <KeyboardAvoidingView
+      style={estilos.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <Text style={estilos.textoCabecalho}>Criar Usuário</Text>
+        <View style={estilos.containerPerfil}>
+          <TouchableOpacity
+            style={[estilos.opcaoPerfil, dadosUsuario.profile === 'motorista' && estilos.selecionado]}
+            onPress={() => setDadosUsuario({ ...dadosUsuario, profile: 'motorista' })}
+          >
+            <FontAwesome name="motorcycle" size={24} color={dadosUsuario.profile === 'motorista' ? '#143d59' : '#aaa'} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[estilos.opcaoPerfil, dadosUsuario.profile === 'filial' && estilos.selecionado]}
+            onPress={() => setDadosUsuario({ ...dadosUsuario, profile: 'filial' })}
+          >
+            <FontAwesome name="building" size={24} color={dadosUsuario.profile === 'filial' ? '#143d59' : '#aaa'} />
+          </TouchableOpacity>
+        </View>
+
+        <TextInput
+          style={estilos.entrada}
+          placeholder="Nome completo"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.name}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, name: texto })}
+        />
+
+        <TextInput
+          style={estilos.entrada}
+          placeholder={dadosUsuario.profile === 'motorista' ? 'CPF' : 'CNPJ'}
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.document}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, document: texto })}
+        />
+        
+        <TextInput
+          style={estilos.entrada}
+          placeholder="Endereço Completo"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.full_address}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, full_address: texto })}
+        />
+
+        <Text style={estilos.cabecalhoSecao}>Dados de login</Text>
+        <TextInput
+          style={estilos.entrada}
+          placeholder="Email"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.email}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, email: texto })}
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={estilos.entrada}
+          placeholder="Senha"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.password}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, password: texto })}
+          secureTextEntry
+        />
+        <TextInput
+          style={estilos.entrada}
+          placeholder="Confirme a senha"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.confirmarSenha}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, confirmarSenha: texto })}
+          secureTextEntry
+        />
+
+        <TouchableOpacity style={estilos.botao} onPress={salvarUsuario}>
+          <Text style={estilos.textoBotao}>Cadastrar</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.profileOption, userData.profile === 'filial' && styles.selected]}
-          onPress={() => setUserData({ ...userData, profile: 'filial' })}
-        >
-          <Text style={styles.profileText}>Filial</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Text style={styles.label}>Nome Completo</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.name}
-        onChangeText={(text) => setUserData({ ...userData, name: text })}
-      />
-
-      <Text style={styles.label}>{userData.profile === 'motorista' ? 'CPF' : 'CNPJ'}</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.document}
-        onChangeText={(text) => setUserData({ ...userData, document: text })}
-      />
-
-      <Text style={styles.label}>Endereço Completo</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.full_address}
-        onChangeText={(text) => setUserData({ ...userData, full_address: text })}
-      />
-
-      <Text style={styles.label}>Email</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.email}
-        onChangeText={(text) => setUserData({ ...userData, email: text })}
-        keyboardType="email-address"
-      />
-
-      <Text style={styles.label}>Senha</Text>
-      <TextInput
-        style={styles.input}
-        value={userData.password}
-        onChangeText={(text) => setUserData({ ...userData, password: text })}
-        secureTextEntry
-      />
-
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>{userId ? 'Atualizar' : 'Cadastrar'}</Text>
-      </TouchableOpacity>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
     backgroundColor: '#143d59',
   },
-  label: {
-    color: '#f4b41a',
-    fontSize: 16,
-    marginBottom: 8,
+  textoCabecalho: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
   },
-  profileContainer: {
+  containerPerfil: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginBottom: 16,
+    alignItems: 'center',
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
   },
-  profileOption: {
-    padding: 10,
-    borderWidth: 1,
+  opcaoPerfil: {
+    padding: 15,
+    marginHorizontal: 10,
+    borderWidth: 2,
     borderColor: '#f4b41a',
-    marginHorizontal: 5,
     borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  selected: {
+  selecionado: {
     backgroundColor: '#f4b41a',
   },
-  profileText: {
-    color: '#143d59',
-    fontSize: 16,
-  },
-  input: {
+  entrada: {
     borderColor: '#f4b41a',
     borderWidth: 1,
     borderRadius: 8,
@@ -168,14 +182,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: '#fff',
   },
-  button: {
+  cabecalhoSecao: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+    marginVertical: 10,
+  },
+  botao: {
     backgroundColor: '#f4b41a',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
+    marginTop: 20,
   },
-  buttonText: {
-    color: '#143d59',
+  textoBotao: {
+    color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
   },
