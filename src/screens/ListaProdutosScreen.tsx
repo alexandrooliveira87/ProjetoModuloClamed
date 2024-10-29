@@ -16,12 +16,11 @@ const ListaProdutosScreen: React.FC = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Função para buscar a lista de produtos
   const fetchProducts = async () => {
     try {
       const response = await axios.get('http://10.0.3.217:3000/products');
       setProducts(response.data);
-      setFilteredProducts(response.data); // Inicia com todos os produtos visíveis
+      setFilteredProducts(response.data);
     } catch (error) {
       Alert.alert('Erro', 'Erro ao carregar produtos');
     }
@@ -31,7 +30,6 @@ const ListaProdutosScreen: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // Função para filtrar produtos pelo termo de busca
   const handleSearch = () => {
     const filtered = products.filter(
       (product) =>
@@ -41,17 +39,16 @@ const ListaProdutosScreen: React.FC = () => {
     setFilteredProducts(filtered);
   };
 
-  // Função para renderizar cada item (produto) na FlatList
   const renderProductItem = ({ item }: { item: Product }) => (
-    <View style={styles.productCard}>
-      <Image source={{ uri: item.image_url }} style={styles.productImage} />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.product_name}</Text>
-        <View style={styles.productDetails}>
-          <Text style={styles.branchName}>Loja {item.branch_name}</Text>
-          <Text style={styles.quantity}>{item.quantity} Unidades</Text>
+    <View style={estilos.cartaoProduto}>
+      <Image source={{ uri: item.image_url }} style={estilos.imagemProduto} />
+      <View style={estilos.infoProduto}>
+        <Text style={estilos.nomeProduto}>{item.product_name}</Text>
+        <View style={estilos.detalhesProduto}>
+          <Text style={estilos.nomeLoja}>Loja {item.branch_name}</Text>
+          <Text style={estilos.quantidade}>{item.quantity} Unidades</Text>
         </View>
-        <Text style={styles.productDescription}>
+        <Text style={estilos.descricaoProduto}>
           {item.description.length > 100 ? item.description.substring(0, 100) + '...' : item.description}
         </Text>
       </View>
@@ -59,67 +56,63 @@ const ListaProdutosScreen: React.FC = () => {
   );
 
   return (
-    <View style={styles.container}>
-      {/* Header da página */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Estoque</Text>
+    <View style={estilos.container}>
+      <View style={estilos.cabecalho}>
+        <Text style={estilos.titulo}>Estoque</Text>
       </View>
 
-      {/* Campo de pesquisa */}
-      <View style={styles.searchContainer}>
+      <View style={estilos.containerBusca}>
         <TextInput
-          style={styles.searchInput}
+          style={estilos.inputBusca}
           placeholder="Digite o nome do produto ou loja"
           value={searchTerm}
           onChangeText={setSearchTerm}
           placeholderTextColor="#aaa"
         />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Text style={styles.searchButtonText}>Buscar</Text>
+        <TouchableOpacity style={estilos.botaoBusca} onPress={handleSearch}>
+          <Text style={estilos.textoBotaoBusca}>Buscar</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Exibir quantidade de produtos encontrados */}
-      <Text style={styles.resultCount}>
+      <Text style={estilos.contagemResultados}>
         {filteredProducts.length} produto(s) encontrado(s)
       </Text>
 
-      {/* FlatList para exibir a lista de produtos */}
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())} // Fallback para IDs indefinidos
+        keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
         renderItem={renderProductItem}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyText}>Nenhum produto encontrado</Text>}
+        contentContainerStyle={estilos.lista}
+        ListEmptyComponent={<Text style={estilos.textoVazio}>Nenhum produto encontrado</Text>}
       />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#143d59',
     padding: 16,
   },
-  header: {
+  cabecalho: {
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f4b41a',
     marginBottom: 16,
   },
-  title: {
+  titulo: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#f4b41a',
     textAlign: 'center',
   },
-  searchContainer: {
+  containerBusca: {
     flexDirection: 'row',
     marginBottom: 20,
     alignItems: 'center',
   },
-  searchInput: {
+  inputBusca: {
     flex: 1,
     height: 40,
     borderColor: '#f4b41a',
@@ -128,26 +121,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     color: '#fff',
   },
-  searchButton: {
+  botaoBusca: {
     marginLeft: 10,
     backgroundColor: '#f4b41a',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 15,
   },
-  searchButtonText: {
+  textoBotaoBusca: {
     color: '#143d59',
     fontWeight: 'bold',
   },
-  resultCount: {
+  contagemResultados: {
     color: '#fff',
     fontSize: 16,
     marginBottom: 10,
   },
-  list: {
+  lista: {
     paddingBottom: 16,
   },
-  productCard: {
+  cartaoProduto: {
     flexDirection: 'row',
     backgroundColor: '#fff',
     borderRadius: 8,
@@ -159,40 +152,40 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-  productImage: {
+  imagemProduto: {
     width: 60,
     height: 60,
     borderRadius: 8,
     marginRight: 10,
   },
-  productInfo: {
+  infoProduto: {
     flex: 1,
     justifyContent: 'center',
   },
-  productName: {
+  nomeProduto: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#143d59',
   },
-  productDetails: {
+  detalhesProduto: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 5,
   },
-  branchName: {
+  nomeLoja: {
     fontSize: 14,
     color: '#143d59',
   },
-  quantity: {
+  quantidade: {
     fontSize: 14,
     color: '#143d59',
   },
-  productDescription: {
+  descricaoProduto: {
     fontSize: 14,
     color: '#143d59',
     marginTop: 5,
   },
-  emptyText: {
+  textoVazio: {
     color: '#f4b41a',
     fontSize: 16,
     textAlign: 'center',
