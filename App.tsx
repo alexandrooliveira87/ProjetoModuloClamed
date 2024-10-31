@@ -22,6 +22,7 @@ export default function App() {
         <Stack.Screen name="CadastroUsuario" component={CadastroUsuarioScreen} />
         <Stack.Screen name="ListagemMovimentacoes" component={ListagemMovimentacoesScreen} />
         <Stack.Screen name="CadastroMovimentacao" component={CadastroMovimentacaoScreen} />
+       
       </Stack.Navigator>
     </NavigationContainer>
   );

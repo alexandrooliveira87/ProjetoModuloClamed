@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert } from 'reac
 import { Picker } from '@react-native-picker/picker';
 import axios from 'axios';
 
+// Definição das interfaces para Branch (filial) e Product (produto)
 interface Branch {
   id: number;
   name: string;
@@ -17,65 +18,68 @@ interface Product {
 }
 
 const CadastroMovimentacaoScreen: React.FC = () => {
-  const [origem, setOrigem] = useState('');
-  const [destino, setDestino] = useState('');
-  const [produto, setProduto] = useState('');
-  const [quantidade, setQuantidade] = useState('');
-  const [observacoes, setObservacoes] = useState('');
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [selectedProductQuantity, setSelectedProductQuantity] = useState<number | null>(null);
+  // Declaração de estados para gerenciar os dados do formulário e listas
+  const [origem, setOrigem] = useState(''); // Filial de origem
+  const [destino, setDestino] = useState(''); // Filial de destino
+  const [produto, setProduto] = useState(''); // Produto selecionado
+  const [quantidade, setQuantidade] = useState(''); // Quantidade de movimentação
+  const [observacoes, setObservacoes] = useState(''); // Observações adicionais
+  const [branches, setBranches] = useState<Branch[]>([]); // Lista de filiais
+  const [products, setProducts] = useState<Product[]>([]); // Lista de produtos
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // Produtos filtrados por filial de origem
+  const [selectedProductQuantity, setSelectedProductQuantity] = useState<number | null>(null); // Estoque disponível do produto
 
+  // Função para buscar as opções de filiais e produtos da API ao montar o componente
   useEffect(() => {
     const fetchOptions = async () => {
       try {
-        const branchesResponse = await axios.get('http://10.0.3.217:3000/branches/options');
-        const productsResponse = await axios.get('http://10.0.3.217:3000/products/options');
+        // Requisições para obter dados das filiais e produtos
+        const branchesResponse = await axios.get('http://192.168.5.113:3000/branches/options');
+        const productsResponse = await axios.get('http://192.168.5.113:3000/products/options');
 
-        console.log("Branches Response Data:", branchesResponse.data);
-        console.log("Products Response Data:", productsResponse.data);
-
+        // Atualiza o estado com as listas retornadas, se válidas
         if (Array.isArray(branchesResponse.data)) {
           setBranches(branchesResponse.data);
         }
-
         if (Array.isArray(productsResponse.data)) {
           setProducts(productsResponse.data);
         }
       } catch (error) {
-        console.error("Erro ao carregar opções:", error);
         Alert.alert('Erro', 'Não foi possível carregar as opções');
       }
     };
-    fetchOptions();
+    fetchOptions(); // Chama a função ao carregar o componente
   }, []);
 
-  // Filtra produtos com base na filial de origem selecionada
+  // Filtra os produtos com base na filial de origem selecionada
   useEffect(() => {
     const filtered = products.filter((p) => p.branch_id === Number(origem));
     setFilteredProducts(filtered);
-  }, [origem, products]);
+  }, [origem, products]); // Atualiza ao mudar a origem ou lista de produtos
 
-  // Atualiza a quantidade disponível do produto selecionado
+  // Atualiza a quantidade disponível do produto selecionado ao mudar o produto ou lista de produtos
   useEffect(() => {
     const selectedProduct = filteredProducts.find((p) => p.product_id === Number(produto));
     setSelectedProductQuantity(selectedProduct ? selectedProduct.quantity : null);
   }, [produto, filteredProducts]);
 
+  // Função para tratar o cadastro da movimentação
   const handleCadastro = async () => {
+    // Validação para evitar selecionar a mesma filial como origem e destino
     if (origem === destino) {
       Alert.alert('Erro', 'A filial de origem e destino devem ser diferentes');
       return;
     }
 
+    // Verificação se há estoque suficiente do produto para a movimentação
     if (selectedProductQuantity !== null && Number(quantidade) > selectedProductQuantity) {
       Alert.alert('Erro', 'Estoque insuficiente para essa movimentação');
       return;
     }
 
     try {
-      await axios.post('http://10.0.3.217:3000/movements', {
+      // Requisição de cadastro da movimentação
+      await axios.post('http://192.168.5.113:3000/movements', {
         originBranchId: Number(origem),
         destinationBranchId: Number(destino),
         productId: Number(produto),
@@ -84,18 +88,18 @@ const CadastroMovimentacaoScreen: React.FC = () => {
       });
       Alert.alert('Sucesso', 'Movimentação cadastrada com sucesso');
     } catch (error) {
-      console.error("Erro ao cadastrar movimentação:", error);
       Alert.alert('Erro', 'Não foi possível cadastrar a movimentação');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Filial de Origem</Text>
+    <View style={estilos.container}>
+      {/* Campo de seleção para a filial de origem */}
+      <Text style={estilos.rotulo}>Filial de Origem</Text>
       <Picker
         selectedValue={origem}
         onValueChange={(itemValue) => setOrigem(itemValue)}
-        style={styles.picker}
+        style={estilos.seletor}
       >
         <Picker.Item label="Selecione a Filial de Origem" value="" />
         {branches.map((branch) =>
@@ -105,11 +109,12 @@ const CadastroMovimentacaoScreen: React.FC = () => {
         )}
       </Picker>
 
-      <Text style={styles.label}>Filial de Destino</Text>
+      {/* Campo de seleção para a filial de destino */}
+      <Text style={estilos.rotulo}>Filial de Destino</Text>
       <Picker
         selectedValue={destino}
         onValueChange={(itemValue) => setDestino(itemValue)}
-        style={styles.picker}
+        style={estilos.seletor}
       >
         <Picker.Item label="Selecione a Filial de Destino" value="" />
         {branches.map((branch) =>
@@ -119,11 +124,12 @@ const CadastroMovimentacaoScreen: React.FC = () => {
         )}
       </Picker>
 
-      <Text style={styles.label}>Produto</Text>
+      {/* Campo de seleção para o produto */}
+      <Text style={estilos.rotulo}>Produto</Text>
       <Picker
         selectedValue={produto}
         onValueChange={(itemValue) => setProduto(itemValue)}
-        style={styles.picker}
+        style={estilos.seletor}
       >
         <Picker.Item label="Selecione o Produto" value="" />
         {filteredProducts.map((product) =>
@@ -133,60 +139,67 @@ const CadastroMovimentacaoScreen: React.FC = () => {
         )}
       </Picker>
 
-      <Text style={styles.label}>Quantidade</Text>
+      {/* Campo de entrada para a quantidade */}
+      <Text style={estilos.rotulo}>Quantidade</Text>
       <TextInput
-        style={styles.input}
+        style={estilos.entrada}
         keyboardType="numeric"
         value={quantidade}
         onChangeText={setQuantidade}
       />
 
-      <Text style={styles.label}>Observações</Text>
+      {/* Campo de entrada para observações */}
+      <Text style={estilos.rotulo}>Observações</Text>
       <TextInput
-        style={styles.input}
+        style={estilos.entrada}
         multiline
         value={observacoes}
         onChangeText={setObservacoes}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleCadastro}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
+      {/* Botão para enviar o formulário */}
+      <TouchableOpacity style={estilos.botao} onPress={handleCadastro}>
+        <Text style={estilos.textoBotao}>Cadastrar</Text>
       </TouchableOpacity>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+// Estilos em português para manter consistência com o layout do projeto
+const estilos = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#143d59', // Fundo azul escuro
   },
-  label: {
+  rotulo: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#f4b41a', // Amarelo
   },
-  picker: {
+  seletor: {
     backgroundColor: '#fff',
     borderRadius: 8,
     marginBottom: 16,
   },
-  input: {
+  entrada: {
     backgroundColor: '#fff',
     borderRadius: 8,
     padding: 10,
     marginBottom: 16,
+    color: '#000',
   },
-  button: {
-    backgroundColor: '#4CAF50',
+  botao: {
+    backgroundColor: '#f4b41a', // Botão em amarelo
     padding: 15,
     alignItems: 'center',
     borderRadius: 8,
   },
-  buttonText: {
-    color: '#fff',
+  textoBotao: {
+    color: '#143d59', // Texto do botão em azul escuro
     fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

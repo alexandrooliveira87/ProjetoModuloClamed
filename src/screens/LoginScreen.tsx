@@ -17,7 +17,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://10.0.3.217:3000/login', { email, password });
+      const response = await axios.post('http://192.168.5.113:3000/login', { email, password });
       if (response.status === 200) {
         Alert.alert('Sucesso', `Bem-vindo, ${response.data.name}`);
 
