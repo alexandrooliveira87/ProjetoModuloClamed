@@ -30,7 +30,7 @@ const CadastroUsuarioScreen: React.FC = () => {
 
     try {
       const resposta = await axios.post(
-        'http://10.0.3.217:3000/register',
+        'http://192.168.5.113:3000/register',
         { profile, name, document, full_address, email, password },
         { headers: { 'Content-Type': 'application/json' } }
       );
