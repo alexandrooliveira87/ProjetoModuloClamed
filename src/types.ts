@@ -4,4 +4,6 @@ export type RootStackParamList = {
   ListaProdutos: undefined;
   Usuarios: undefined;
   CadastroUsuario: undefined;
+  ListagemMovimentacoes: undefined;
+  CadastroMovimentacao: undefined;
 };
