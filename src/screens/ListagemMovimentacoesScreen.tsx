@@ -6,8 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 
 interface Movimentacao {
   id: number;
-  origem: { nome: string };
-  destino: { nome: string };
+  origem: { nome: string; latitude: number; longitude: number };
+  destino: { nome: string; latitude: number; longitude: number };
   produto: { nome: string; imagem: string };
   quantidade: number;
   status: string;
@@ -16,7 +16,7 @@ interface Movimentacao {
 
 const ListagemMovimentacoesScreen: React.FC = () => {
   const [movimentacoes, setMovimentacoes] = useState<Movimentacao[]>([]);
-  const [motorista, setMotorista] = useState('Nome do Motorista'); // Nome fixo do motorista para demonstração
+  const [motorista, setMotorista] = useState('Nome do Motorista');
   const navigation = useNavigation();
 
   const buscarMovimentacoes = async () => {
@@ -28,9 +28,25 @@ const ListagemMovimentacoesScreen: React.FC = () => {
     }
   };
 
+  // Função para calcular a distância entre dois pontos de latitude/longitude
+  const calcularDistancia = (lat1: number, lon1: number, lat2: number, lon2: number): string => {
+    const R = 6371; // Raio da Terra em km
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distancia = R * c; // Distância em km
+    return distancia.toFixed(2) + ' km';
+  };
+
   const handleStatusChange = async (id: number, novoStatus: string) => {
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== 'granted') {
         Alert.alert('Permissão necessária', 'Permita o acesso à câmera para continuar.');
         return;
@@ -52,12 +68,8 @@ const ListagemMovimentacoesScreen: React.FC = () => {
         });
 
         if (response.status === 200) {
-          setMovimentacoes((prevMovimentacoes) =>
-            prevMovimentacoes.map((mov) =>
-              mov.id === id ? { ...mov, status: novoStatus } : mov
-            )
-          );
           Alert.alert('Sucesso', `Status alterado para ${novoStatus}`);
+          buscarMovimentacoes(); // Recarrega a lista após atualização
         }
       }
     } catch (error) {
@@ -69,52 +81,66 @@ const ListagemMovimentacoesScreen: React.FC = () => {
     buscarMovimentacoes();
   }, []);
 
-  const renderizarItemMovimentacao = ({ item }: { item: Movimentacao }) => (
-    <View style={estilos.cartaoMovimentacao}>
-      <Image source={{ uri: item.produto.imagem }} style={estilos.imagemProduto} />
-      <View style={estilos.infoContainer}>
-        <Text style={estilos.textoTitulo}>{item.produto.nome}</Text>
-        <Text style={estilos.quantidade}>{item.quantidade} Unidades</Text>
-        <Text style={estilos.texto}>Origem: {item.origem.nome}</Text>
-        <Text style={estilos.texto}>Destino: {item.destino.nome}</Text>
-        <Text style={estilos.status}>Status: {item.status}</Text>
-        
-        <Text style={estilos.texto}>Histórico:</Text>
-        {item.historico.map((hist, index) => (
-          <Text key={index} style={estilos.historicoItem}>
-            - {hist.descricao} - {new Date(hist.data).toLocaleString()}
-          </Text>
-        ))}
+  const renderizarItemMovimentacao = ({ item }: { item: Movimentacao }) => {
+    const distancia = calcularDistancia(
+      item.origem.latitude,
+      item.origem.longitude,
+      item.destino.latitude,
+      item.destino.longitude
+    );
 
-        <View style={estilos.botoesContainer}>
-          {item.status === 'created' && (
-            <TouchableOpacity
-              style={estilos.botaoAcao}
-              onPress={() => handleStatusChange(item.id, 'em transito')}
-            >
-              <Text style={estilos.textoBotao}>Iniciar Entrega</Text>
-            </TouchableOpacity>
-          )}
+    return (
+      <View
+        style={[
+          estilos.cartaoMovimentacao,
+          item.status === 'created'
+            ? estilos.fundoCinza
+            : item.status === 'em transito'
+            ? estilos.fundoSalmao
+            : estilos.fundoVerde,
+        ]}
+      >
+        <Image source={{ uri: item.produto.imagem }} style={estilos.imagemProduto} />
+        <View style={estilos.infoContainer}>
+          <Text style={estilos.textoTitulo}>ID: {item.id} - {item.produto.nome}</Text>
+          <Text style={estilos.quantidade}>Quantidade: {item.quantidade} Unidades</Text>
+          <Text style={estilos.texto}>Origem: {item.origem.nome}</Text>
+          <Text style={estilos.texto}>Destino: {item.destino.nome}</Text>
+          <Text style={estilos.texto}>Distância: {distancia}</Text>
+          <Text style={estilos.status}>Status: {item.status}</Text>
+          
+          <View style={estilos.botoesContainer}>
+            {item.status === 'created' && (
+              <TouchableOpacity
+                style={estilos.botaoAcao}
+                onPress={() => handleStatusChange(item.id, 'em transito')}
+              >
+                <Text style={estilos.textoBotao}>Iniciar Entrega</Text>
+              </TouchableOpacity>
+            )}
 
-          {item.status === 'em transito' && (
-            <TouchableOpacity
-              style={estilos.botaoAcao}
-              onPress={() => handleStatusChange(item.id, 'Coleta finalizada')}
-            >
-              <Text style={estilos.textoBotao}>Finalizar Entrega</Text>
-            </TouchableOpacity>
-          )}
+            {item.status === 'em transito' && (
+              <TouchableOpacity
+                style={estilos.botaoAcao}
+                onPress={() => handleStatusChange(item.id, 'Coleta finalizada')}
+              >
+                <Text style={estilos.textoBotao}>Finalizar Entrega</Text>
+              </TouchableOpacity>
+            )}
 
-          <TouchableOpacity
-            style={estilos.botaoMapa}
-            onPress={() => navigation.navigate('MapaScreen', { origem: item.origem, destino: item.destino })}
-          >
-            <Text style={estilos.textoBotao}>Mapa</Text>
-          </TouchableOpacity>
+            {(item.status === 'created' || item.status === 'em transito') && (
+              <TouchableOpacity
+                style={estilos.botaoMapa}
+                onPress={() => navigation.navigate('MapaScreen', { origem: item.origem, destino: item.destino })}
+              >
+                <Text style={estilos.textoBotao}>Mapa</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={estilos.container}>
@@ -139,7 +165,6 @@ const estilos = StyleSheet.create({
     paddingBottom: 16,
   },
   cartaoMovimentacao: {
-    backgroundColor: '#d3dfea',
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
@@ -150,6 +175,15 @@ const estilos = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
+  },
+  fundoCinza: {
+    backgroundColor: '#d3d3d3',
+  },
+  fundoSalmao: {
+    backgroundColor: '#ffa07a',
+  },
+  fundoVerde: {
+    backgroundColor: '#98fb98',
   },
   imagemProduto: {
     width: 80,
@@ -173,11 +207,6 @@ const estilos = StyleSheet.create({
   texto: {
     fontSize: 14,
     color: '#4e4e4e',
-  },
-  historicoItem: {
-    fontSize: 12,
-    color: '#333',
-    marginLeft: 10,
   },
   status: {
     fontSize: 14,

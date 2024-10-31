@@ -24,19 +24,27 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
+    navigation.replace('Login'); // Substitui a tela atual pela tela de Login
+  };
+
   useEffect(() => {
     fetchUserData();
   }, []);
 
   return (
     <View style={styles.container}>
-      {/* Header com imagem de perfil */}
+      {/* Header com imagem de perfil e botão de logout */}
       <View style={styles.header}>
         <Image
           source={{ uri: 'https://i.pravatar.cc/300' }} 
           style={styles.profileImage}
         />
         <Text style={styles.greeting}>Olá, {userName}</Text>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Sair</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Card para Estoque */}
@@ -107,6 +115,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between', // Alinha os itens ao longo da linha
     marginVertical: 20,
     backgroundColor: '#f4b41a',  // Cor de fundo do cabeçalho
     padding: 10,
@@ -121,6 +130,17 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 18,
     color: '#143d59',  // Cor do texto
+    flex: 1,
+  },
+  logoutButton: {
+    backgroundColor: '#143d59',  // Cor do botão de logout
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  logoutButtonText: {
+    color: '#f4b41a',  // Cor do texto do botão de logout
+    fontWeight: 'bold',
   },
   card: {
     flexDirection: 'row',
@@ -139,18 +159,21 @@ const styles = StyleSheet.create({
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap', // Permite que o texto quebre em várias linhas
   },
   cardText: {
     fontSize: 18,
     marginLeft: 10,
     fontWeight: 'bold',
     color: '#f4b41a',  // Cor do texto
+    maxWidth: 180, // Define um limite de largura para o texto
   },
   manageButton: {
     backgroundColor: '#f4b41a',  // Cor do botão
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    width: 120,  // Largura fixa para todos os botões
     borderRadius: 8,
+    alignItems: 'center', // Centraliza o texto no botão
   },
   manageButtonText: {
     color: '#143d59',  // Cor do texto do botão
