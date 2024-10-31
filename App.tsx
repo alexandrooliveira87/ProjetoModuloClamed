@@ -8,6 +8,8 @@ import UsuariosScreen from './src/screens/UsuariosScreen';
 import CadastroUsuarioScreen from './src/screens/CadastroUsuarioScreen';
 import ListagemMovimentacoesScreen from './src/screens/ListagemMovimentacoesScreen';
 import CadastroMovimentacaoScreen from './src/screens/CadastroMovimentacaoScreen';
+import MapaScreen from './src/screens/MapaScreen';
+
 
 const Stack = createStackNavigator();
 
@@ -22,7 +24,8 @@ export default function App() {
         <Stack.Screen name="CadastroUsuario" component={CadastroUsuarioScreen} />
         <Stack.Screen name="ListagemMovimentacoes" component={ListagemMovimentacoesScreen} />
         <Stack.Screen name="CadastroMovimentacao" component={CadastroMovimentacaoScreen} />
-       
+        <Stack.Screen name="MapaScreen" component={MapaScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
