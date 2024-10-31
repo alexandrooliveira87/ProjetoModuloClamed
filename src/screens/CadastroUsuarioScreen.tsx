@@ -8,11 +8,36 @@ const CadastroUsuarioScreen: React.FC = () => {
     profile: 'motorista',
     name: '',
     document: '',
+    cep: '', // Novo campo para o CEP
     full_address: '',
     email: '',
     password: '',
     confirmarSenha: '',
   });
+
+  // Função para buscar endereço pelo CEP
+  const buscarEnderecoPorCep = async () => {
+    const { cep } = dadosUsuario;
+
+    if (cep.length === 8) { // Verifica se o CEP tem 8 dígitos
+      try {
+        const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+        
+        if (response.data.erro) {
+          Alert.alert('Erro', 'CEP não encontrado.');
+          return;
+        }
+        
+        const { logradouro, bairro, localidade, uf } = response.data;
+        const enderecoCompleto = `${logradouro}, ${bairro} - ${localidade}/${uf}`;
+        
+        // Atualiza o campo de endereço completo automaticamente
+        setDadosUsuario({ ...dadosUsuario, full_address: enderecoCompleto });
+      } catch (error) {
+        Alert.alert('Erro', 'Erro ao buscar endereço.');
+      }
+    }
+  };
 
   const salvarUsuario = async () => {
     const { name, document, full_address, email, password, confirmarSenha, profile } = dadosUsuario;
@@ -41,6 +66,7 @@ const CadastroUsuarioScreen: React.FC = () => {
           profile: 'motorista',
           name: '',
           document: '',
+          cep: '',
           full_address: '',
           email: '',
           password: '',
@@ -98,7 +124,19 @@ const CadastroUsuarioScreen: React.FC = () => {
           value={dadosUsuario.document}
           onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, document: texto })}
         />
-        
+
+        {/* Campo para o CEP */}
+        <TextInput
+          style={estilos.entrada}
+          placeholder="CEP"
+          placeholderTextColor="#FFFFFF"
+          value={dadosUsuario.cep}
+          onChangeText={(texto) => setDadosUsuario({ ...dadosUsuario, cep: texto })}
+          onBlur={buscarEnderecoPorCep} // Dispara a busca ao sair do campo de CEP
+          keyboardType="numeric"
+        />
+
+        {/* Campo preenchido automaticamente com o endereço completo */}
         <TextInput
           style={estilos.entrada}
           placeholder="Endereço Completo"
@@ -140,6 +178,8 @@ const CadastroUsuarioScreen: React.FC = () => {
     </KeyboardAvoidingView>
   );
 };
+
+
 
 const estilos = StyleSheet.create({
   container: {

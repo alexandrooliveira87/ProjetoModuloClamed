@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Switch, Alert, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import axios from 'axios';
-import { useNavigation } from '@react-navigation/native';
-import { FontAwesome } from '@expo/vector-icons';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { FontAwesome, MaterialIcons } from '@expo/vector-icons';
 
-// Interface para definir o tipo User, representando os dados de cada usuário
 interface User {
   id: number;
   name: string;
@@ -13,82 +12,104 @@ interface User {
 }
 
 const UsuariosScreen: React.FC = () => {
-  // Estado para armazenar a lista de usuários
   const [users, setUsers] = useState<User[]>([]);
-  // Hook para navegação
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [searchName, setSearchName] = useState('');
+  const [loadingStatus, setLoadingStatus] = useState<number | null>(null);
   const navigation = useNavigation();
 
-  // Função para buscar a lista de usuários da API
   const fetchUsers = async () => {
     try {
-      // Faz uma requisição GET para a API e armazena a resposta no estado
       const response = await axios.get('http://192.168.5.113:3000/users');
       setUsers(response.data);
+      setFilteredUsers(response.data); // Inicializa a lista filtrada com todos os usuários
     } catch (error) {
-      console.error('Erro ao buscar usuários:', error); // Loga o erro no console
+      console.error('Erro ao buscar usuários:', error);
     }
   };
 
-  // Função para alternar o status de um usuário específico
+  useFocusEffect(
+    useCallback(() => {
+      fetchUsers();
+    }, [])
+  );
+
+  // Filtra os usuários com base no nome
+  const handleFilter = () => {
+    const filtered = users.filter(user =>
+      user.name.toLowerCase().includes(searchName.toLowerCase())
+    );
+    setFilteredUsers(filtered);
+  };
+
   const toggleUserStatus = async (id: number) => {
+    setLoadingStatus(id);
+
     try {
-      // Faz uma requisição PATCH para atualizar o status do usuário na API
       const response = await axios.patch(`http://192.168.5.113:3000/users/${id}/toggle-status`);
       const updatedStatus = response.data.status;
 
-      // Atualiza o estado local de usuários com o novo status do usuário específico
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === id ? { ...user, status: updatedStatus } : user
-        )
+      setUsers(prevUsers =>
+        prevUsers.map(user => (user.id === id ? { ...user, status: updatedStatus } : user))
       );
+      handleFilter();
+      Alert.alert('Sucesso', 'Status do usuário atualizado com sucesso.');
     } catch (error) {
-      // Exibe um alerta se houver erro ao alterar o status
       Alert.alert('Erro', 'Erro ao alterar status do usuário.');
+    } finally {
+      setLoadingStatus(null);
     }
   };
 
-  // Hook useEffect para buscar usuários quando o componente for montado
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    handleFilter();
+  }, [searchName, users]);
 
-  // Função para renderizar cada item na lista de usuários
   const renderItem = ({ item }: { item: User }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('CadastroUsuario', { userId: item.id })}
-      style={[
-        styles.cartao,
-        item.status ? styles.cartaoAtivo : styles.cartaoInativo,
-      ]}
+      style={[styles.cartao, item.status ? styles.cartaoAtivo : styles.cartaoInativo]}
     >
-      {/* Exibe o ícone e o nome do usuário */}
       <View style={styles.infoUsuario}>
         <FontAwesome
           name={item.profile === 'motorista' ? 'motorcycle' : 'building'}
           size={24}
-          color="#143d59" // Cor do ícone azul escuro
+          color="#143d59"
         />
         <Text style={styles.nomeUsuario}>{item.name}</Text>
       </View>
-      {/* Switch para alternar o status do usuário */}
-      <Switch
-        value={item.status}
-        onValueChange={() => toggleUserStatus(item.id)}
-      />
+      <TouchableOpacity
+        style={styles.toggleButton}
+        onPress={() => toggleUserStatus(item.id)}
+      >
+        {loadingStatus === item.id ? (
+          <ActivityIndicator size="small" color="#143d59" />
+        ) : item.status ? (
+          <MaterialIcons name="check-circle" size={24} color="green" />
+        ) : (
+          <MaterialIcons name="cancel" size={24} color="red" />
+        )}
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      {/* FlatList para exibir a lista de usuários */}
+      <TextInput
+        style={styles.input}
+        placeholder="Buscar por nome"
+        placeholderTextColor="#FFF"
+        value={searchName}
+        onChangeText={setSearchName}
+      />
+
       <FlatList
-        data={users}
+        data={filteredUsers}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={styles.lista}
       />
-      {/* Botão para adicionar um novo usuário */}
+
       <TouchableOpacity
         style={styles.botaoAdicionar}
         onPress={() => navigation.navigate('CadastroUsuario')}
@@ -99,12 +120,19 @@ const UsuariosScreen: React.FC = () => {
   );
 };
 
-// Estilos para os elementos da tela
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#143d59', // Cor de fundo azul escuro
+    backgroundColor: '#143d59',
+  },
+  input: {
+    backgroundColor: '#f4b41a',
+    color: '#FFF',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginBottom: 10,
   },
   lista: {
     paddingBottom: 16,
@@ -116,7 +144,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 10,
     borderRadius: 8,
-    backgroundColor: '#FFF', // Fundo branco do cartão
+    backgroundColor: '#FFF',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -124,11 +152,11 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   cartaoAtivo: {
-    borderColor: 'green', // Borda verde para usuários ativos
+    borderColor: 'green',
     borderWidth: 2,
   },
   cartaoInativo: {
-    backgroundColor: '#ffcccc', // Fundo vermelho claro para usuários inativos
+    backgroundColor: '#ffcccc',
   },
   infoUsuario: {
     flex: 1,
@@ -139,17 +167,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginLeft: 10,
     fontWeight: 'bold',
-    color: '#111', // Cor do texto do nome do usuário
+    color: '#111',
+  },
+  toggleButton: {
+    padding: 8,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   botaoAdicionar: {
-    backgroundColor: '#f4b41a', // Fundo amarelo para o botão de adicionar
+    backgroundColor: '#f4b41a',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 20,
   },
   textoBotaoAdicionar: {
-    color: '#143d59', // Texto azul escuro no botão de adicionar
+    color: '#143d59',
     fontSize: 18,
     fontWeight: 'bold',
   },
